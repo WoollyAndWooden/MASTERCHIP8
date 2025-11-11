@@ -39,3 +39,15 @@
 
 # debug information files
 *.dwo
+
+# Cmake folders
+cmake-build-debug
+
+# VENVs
+.venv
+
+# Anything in the build dir is uneccessary
+build/*
+
+# Anything IDE related
+*.idea
