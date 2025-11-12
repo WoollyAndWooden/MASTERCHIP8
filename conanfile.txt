@@ -1,6 +1,7 @@
 [requires]
 qt/6.8.3
 portable-file-dialogs/0.1.0
+inipp/1.0.12
 
 [options]
 qt/6.8.3:shared=True

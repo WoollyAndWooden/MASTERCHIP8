@@ -51,3 +51,13 @@ build/*
 
 # Anything IDE related
 *.idea
+
+# Rom files (used for testing)
+TestSuite/
+*.8o
+
+# Dunno
+*.user
+
+# Qt autosave
+*.autosave
