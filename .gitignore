@@ -61,3 +61,5 @@ TestSuite/
 
 # Qt autosave
 *.autosave
+
+DONOTADD*
