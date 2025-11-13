@@ -47,6 +47,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Cache Conan
+      uses: actions/cache@v3
+      with:
+        path: ${{ runner.os == 'Windows' && 'C:\\Users\\runneradmin\\.conan2\\data' || '~/.conan2/data' }}
+        key: conan-${{ matrix.compiler }}-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
+        restore-keys: |
+            conan-${{ matrix.compiler }}-${{ runner.os }}-
+
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
@@ -71,7 +79,8 @@ jobs:
         conan install . --build=missing -s build_type=Release \
         -s compiler.cppstd=20 \
         -c tools.system.package_manager:mode=install \
-        -c tools.system.package_manager:sudo=True
+        -c tools.system.package_manager:sudo=True \
+        -c tools.cmake.cmake.definitions:QT_FEATURE_int128=ON
     - name: Install dependencies - Windows
       if: runner.os == 'Windows'
       shell: bash
