@@ -1,8 +1,8 @@
 from conan import ConanFile
-from conan.tools.cmake import cmake_layout
+from conan.tools.cmake import cmake_layout, CMakeToolchain
 
 
-class MyProjectConan(ConanFile):
+class MASTERCHIP8(ConanFile):
     name = "MASTERCHIP8"
     version = "0.1"
     settings = "os", "compiler", "build_type", "arch"
@@ -17,6 +17,11 @@ class MyProjectConan(ConanFile):
             self.options.qtwebengine = False
         else:
             self.options.qtwayland = False  # ensure disabled for Windows/macOS
+
+    def generate(self):
+        tc = CMakeToolchain(self)
+        tc.variables["QT_FEATURE_int128"] = True  # set INT128 support
+        tc.generate()
 
     def requirements(self):
         self.requires("qt/6.8.3")
