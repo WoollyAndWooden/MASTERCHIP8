@@ -65,22 +65,18 @@ jobs:
     - name: Detect Conan profile
       run: conan profile detect
 
-    # On linux, certain dependencies need to be installed manually
-    #- name: Install libgl-dev, libgl1-mesa-dev
-      #if: runner.os == 'Linux'
-     # run: |
-     #   sudo apt-get update
-     #   sudo apt-get install -y libgl-dev libgl1-mesa-dev
-
     - name: Install dependencies - Linux
       if: runner.os == 'Linux'
       run: |
         conan install . --build=missing -s build_type=Release \
+        -s compiler.cppstd=20 \
         -c tools.system.package_manager:mode=install \
         -c tools.system.package_manager:sudo=True
     - name: Install dependencies - Windows
       if: runner.os == 'Windows'
-      run: conan install . -s build_type=Release
+      run: |
+        conan install . -s build_type=Release \
+        -s compiler.cppstd=20
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
