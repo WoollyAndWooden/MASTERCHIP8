@@ -80,6 +80,7 @@ jobs:
         -s compiler.cppstd=20
 
     - name: Debug
+      shell: bash
       run: |
         ls -l
     - name: Configure CMake
