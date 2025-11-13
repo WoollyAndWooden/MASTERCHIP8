@@ -28,6 +28,7 @@ jobs:
         c_compiler: [gcc, clang, cl]
         include:
           - os: windows-latest
+            shell: bash
             c_compiler: cl
             cpp_compiler: cl
           - os: ubuntu-latest
