@@ -80,7 +80,7 @@ jobs:
         -s compiler.cppstd=20 \
         -c tools.system.package_manager:mode=install \
         -c tools.system.package_manager:sudo=True \
-        -c tools.cmake.cmake.definitions:QT_FEATURE_int128=ON
+        -c tools.cmake.cmake.definitions:qt_feature_int128=ON
     - name: Install dependencies - Windows
       if: runner.os == 'Windows'
       shell: bash
