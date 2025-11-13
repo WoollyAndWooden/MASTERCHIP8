@@ -28,7 +28,6 @@ jobs:
         c_compiler: [gcc, clang, cl]
         include:
           - os: windows-latest
-            shell: bash
             c_compiler: cl
             cpp_compiler: cl
           - os: ubuntu-latest
@@ -75,6 +74,7 @@ jobs:
         -c tools.system.package_manager:sudo=True
     - name: Install dependencies - Windows
       if: runner.os == 'Windows'
+      shell: bash
       run: |
         conan install . -s build_type=Release \
         -s compiler.cppstd=20
