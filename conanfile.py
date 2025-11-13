@@ -1,17 +1,20 @@
 from conan import ConanFile
+from conan.tools.cmake import cmake_layout
+
 
 class MyProjectConan(ConanFile):
     name = "MASTERCHIP8"
     version = "0.1"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "qtwayland": [True, False]}
-    default_options = {"shared": True, "qtwayland": False}  # default False
+    options = {"shared": [True, False], "qtwayland": [True, False], "qtwebengine": [True, False]}
+    default_options = {"shared": True, "qtwayland": False, "qtwebengine": True}  # default False
     generators = "CMakeDeps", "CMakeToolchain"
     exports_sources = "*"
 
     def config_options(self):
         if self.settings.os == "Linux":
             self.options.qtwayland = True
+            self.options.qtwebengine = False
         else:
             self.options.qtwayland = False  # ensure disabled for Windows/macOS
 
@@ -24,5 +27,4 @@ class MyProjectConan(ConanFile):
             self.requires("opengl/system")
 
     def layout(self):
-        self.folders.build = "build"
-        self.folders.source = "."
+        cmake_layout(self)
