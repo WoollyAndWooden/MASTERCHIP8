@@ -67,15 +67,13 @@ jobs:
 
     - name: Install dependencies - Linux
       if: runner.os == 'Linux'
-      run: |
-        conan install . --build=missing -s build_type=Release \
+      run: conan install . --build=missing -s build_type=Release \
         -s compiler.cppstd=20 \
         -c tools.system.package_manager:mode=install \
         -c tools.system.package_manager:sudo=True
     - name: Install dependencies - Windows
       if: runner.os == 'Windows'
-      run: |
-        conan install . -s build_type=Release \
+      run: conan install . -s build_type=Release \
         -s compiler.cppstd=20
 
     - name: Configure CMake
