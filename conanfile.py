@@ -8,7 +8,7 @@ class MASTERCHIP8(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "qtwayland": [True, False], "qtwebengine": [True, False]}
     default_options = {"shared": True, "qtwayland": False, "qtwebengine": True}  # default False
-    generators = "CMakeDeps", "CMakeToolchain"
+    generators = "CMakeDeps"
     exports_sources = "*"
 
     def config_options(self):
