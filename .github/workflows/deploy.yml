@@ -57,7 +57,7 @@ jobs:
         shell: bash
 
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MASTERCHIP8-windows-${{ needs.check-version.outputs.version }}
           path: artifacts/
@@ -85,7 +85,7 @@ jobs:
         shell: bash
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MASTERCHIP8-linux-${{ needs.check-version.outputs.version }}
           path: artifacts/
