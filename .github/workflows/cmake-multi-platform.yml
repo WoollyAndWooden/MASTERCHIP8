@@ -79,7 +79,8 @@ jobs:
         conan install . --build=missing -s build_type=Release \
         -s compiler.cppstd=20 \
         -c tools.system.package_manager:mode=install \
-        -c tools.system.package_manager:sudo=True
+        -c tools.system.package_manager:sudo=True \
+        -s compiler.cppstd=gnu20
     - name: Install dependencies - Windows
       if: runner.os == 'Windows'
       shell: bash
