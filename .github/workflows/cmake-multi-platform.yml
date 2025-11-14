@@ -3,8 +3,8 @@
 name: CMake on multiple platforms
 
 on:
-  push:
-    branches: [ "main" ]
+  #push:
+  #  branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -76,8 +76,6 @@ jobs:
     - name: Install dependencies - Linux
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get update
-        sudo apt-get install -y ninja-build
         conan install . --build=missing -s build_type=Release \
         -s compiler.cppstd=20 \
         -c tools.system.package_manager:mode=install \
