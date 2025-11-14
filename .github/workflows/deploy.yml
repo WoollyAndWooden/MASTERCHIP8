@@ -60,14 +60,12 @@ jobs:
         run: conan profile detect
 
       - name: Install dependencies - Windows
-        if: runner.os == 'Windows'
         shell: bash
         run: |
           conan install . -s build_type=Release \
           -s compiler.cppstd=20
 
       - name: Configure CMake - Windows
-        if: runner.os == 'Windows'
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: >
@@ -103,8 +101,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set reusable strings
+        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Conan
+        run: pip install conan
+
+      - name: Detect Conan profile
+        run: conan profile detect
+
       - name: Install dependencies - Linux
-        if: runner.os == 'Linux'
         run: |
           conan install . --build=missing -s build_type=Release \
           -s compiler.cppstd=20 \
@@ -113,7 +128,6 @@ jobs:
           -s compiler.cppstd=gnu20
 
       - name: Configure CMake - Linux
-        if: runner.os == 'Linux'
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: |
