@@ -1,0 +1,91 @@
+name: Deploy Binaries
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'   # Matches semantic version tags like v1.2.3
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.check.outputs.deploy }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Set version variables
+        id: check
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"   # extract tag name
+          echo "Tag is $TAG"
+
+          # validate semantic version
+          if [[ ! $TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "Tag does not match semantic versioning vX.Y.Z"
+            echo "deploy=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          MAJOR=${BASH_REMATCH[1]}
+          MINOR=${BASH_REMATCH[2]}
+          PATCH=${BASH_REMATCH[3]}
+
+          echo "MAJOR=$MAJOR, MINOR=$MINOR, PATCH=$PATCH"
+          echo "version=$TAG" >> $GITHUB_OUTPUT
+          echo "deploy=true" >> $GITHUB_OUTPUT
+        shell: bash
+
+  deploy-windows:
+    needs: check-version
+    if: needs.check-version.outputs.deploy == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@v4
+
+      - name: Build Windows binary
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+        shell: bash
+
+      - name: Package Windows binary
+        run: |
+          mkdir -p artifacts
+          cp build/Release/MASTERCHIP8.exe artifacts/
+        shell: bash
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: MASTERCHIP8-windows-${{ needs.check-version.outputs.version }}
+          path: artifacts/
+
+  deploy-linux:
+    needs: check-version
+    if: needs.check-version.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake
+
+      - name: Build Linux binary
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+        shell: bash
+
+      - name: Package Linux binary
+        run: |
+          mkdir -p artifacts
+          cp build/MASTERCHIP8 artifacts/
+        shell: bash
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: MASTERCHIP8-linux-${{ needs.check-version.outputs.version }}
+          path: artifacts/
