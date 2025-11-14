@@ -50,7 +50,7 @@ jobs:
     - name: Cache Conan
       uses: actions/cache@v3
       with:
-        path: ${{ runner.os == 'Windows' && 'C:\\Users\\runneradmin\\.conan2\\data' || '~/.conan2/data' }}
+        path: ${{ runner.os == 'Windows' && 'C:\\Users\\runneradmin\\.conan2\\data' || '~/.conan2/p' }}
         key: conan-${{ matrix.compiler }}-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
         restore-keys: |
             conan-${{ matrix.compiler }}-${{ runner.os }}-
