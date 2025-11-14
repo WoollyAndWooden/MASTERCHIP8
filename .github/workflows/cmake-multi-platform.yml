@@ -65,13 +65,13 @@ jobs:
     - name: Detect Conan profile
       run: conan profile detect
 
-    - name: Cache Conan
-      uses: actions/cache@v3
-      with:
-        path: ${{ runner.os == 'Windows' && 'C:\\Users\\runneradmin\\.conan2\\p' || '~/.conan2/p' }}
-        key: conan-${{ matrix.compiler }}-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
-        restore-keys: |
-          conan-${{ matrix.compiler }}-${{ runner.os }}-
+    #- name: Cache Conan
+    #  uses: actions/cache@v3
+    #  with:
+    #    path: ${{ runner.os == 'Windows' && 'C:\\Users\\runneradmin\\.conan2\\p' || '~/.conan2/p' }}
+    #    key: conan-${{ matrix.compiler }}-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
+    #    restore-keys: |
+    #      conan-${{ matrix.compiler }}-${{ runner.os }}-
 
     - name: Install dependencies - Linux
       if: runner.os == 'Linux'

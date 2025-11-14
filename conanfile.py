@@ -1,5 +1,5 @@
 from conan import ConanFile
-from conan.tools.cmake import cmake_layout, CMakeToolchain
+from conan.tools.cmake import cmake_layout
 
 
 class MASTERCHIP8(ConanFile):
