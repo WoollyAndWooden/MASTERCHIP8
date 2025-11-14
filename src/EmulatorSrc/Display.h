@@ -1,7 +1,3 @@
-//
-// Created by Gaming on 12/11/2025.
-//
-
 #pragma once
 
 
