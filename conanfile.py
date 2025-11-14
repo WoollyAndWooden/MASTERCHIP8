@@ -8,28 +8,18 @@ class MASTERCHIP8(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "qtwayland": [True, False], "qtwebengine": [True, False]}
     default_options = {"shared": True, "qtwayland": False, "qtwebengine": True}  # default False
-    generators = "CMakeDeps"
+    generators = "CMakeDeps", "CMakeToolchain"
     exports_sources = "*"
 
-    def config_options(self):
-        if self.settings.os == "Linux":
-            self.options.qtwayland = True
-            self.options.qtwebengine = False
-        else:
-            self.options.qtwayland = False  # ensure disabled for Windows/macOS
-
-    def generate(self):
-        tc = CMakeToolchain(self)
-        tc.variables["QT_FEATURE_int128"] = True  # set INT128 support
-        tc.generate()
-
     def requirements(self):
-        self.requires("qt/6.8.3")
         self.requires("portable-file-dialogs/0.1.0")
 
         if self.settings.os == "Linux":
+            self.requires("qt/6.8.3", options={"shared":True, "qtwayland": True, "qt_feature_int128": True})
             self.requires("xorg/system")
             self.requires("opengl/system")
+        else:
+            self.requires("qt/6.8.3")
 
     def layout(self):
         cmake_layout(self)
