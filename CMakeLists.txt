@@ -1,11 +1,13 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 4.0.0)
+
 project(MASTERCHIP8 LANGUAGES CXX)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets CONFIG)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
 find_package(portable-file-dialogs CONFIG REQUIRED)
-
-qt_standard_project_setup()
-
+find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
 
 add_executable(MASTERCHIP8 src/main.cpp
         src/QtWindows/mainwindow.h src/QtWindows/mainwindow.cpp src/QtWindows/mainwindow.ui
