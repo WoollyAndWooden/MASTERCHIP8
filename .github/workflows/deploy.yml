@@ -3,7 +3,7 @@ name: Deploy Binaries
 on:
   push:
     tags:
-      - 'v*.*.*'   # Matches semantic version tags like v1.2.3
+      - 'v*.*.*'
 
 jobs:
   check-version:
@@ -15,24 +15,80 @@ jobs:
       - name: Set version variables
         id: check
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"   # extract tag name
-          echo "Tag is $TAG"
-
-          # validate semantic version
+          TAG="${GITHUB_REF#refs/tags/}"
           if [[ ! $TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            echo "Tag does not match semantic versioning vX.Y.Z"
             echo "deploy=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-
-          MAJOR=${BASH_REMATCH[1]}
-          MINOR=${BASH_REMATCH[2]}
-          PATCH=${BASH_REMATCH[3]}
-
-          echo "MAJOR=$MAJOR, MINOR=$MINOR, PATCH=$PATCH"
           echo "version=$TAG" >> $GITHUB_OUTPUT
           echo "deploy=true" >> $GITHUB_OUTPUT
         shell: bash
+
+  deploy-linux:
+    needs: check-version
+    if: needs.check-version.outputs.deploy == 'true'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.6.0'
+          host: 'linux'
+          target: 'desktop'
+          arch: 'gcc_64'
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils libfuse2
+
+      - name: Install Conan
+        run: pip install conan
+
+      - name: Install Dependencies (Conan)
+        run: |
+          conan profile detect
+          conan install . --build=missing -s build_type=Release -s compiler.cppstd=17
+
+      - name: Build
+        run: |
+          # CMAKE_PREFIX_PATH helps find Conan packages. Qt is found via environment vars set by the action.
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(pwd)
+          cmake --build build --parallel
+
+      - name: Create Desktop File
+        run: |
+          echo "[Desktop Entry]" > masterchip8.desktop
+          echo "Type=Application" >> masterchip8.desktop
+          echo "Name=MASTERCHIP8" >> masterchip8.desktop
+          echo "Exec=MASTERCHIP8" >> masterchip8.desktop
+          echo "Icon=masterchip8" >> masterchip8.desktop
+          echo "Categories=Game;" >> masterchip8.desktop
+          touch masterchip8.png
+
+      - name: Deploy (AppImage)
+        run: |
+          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+          chmod +x linuxdeployqt-continuous-x86_64.AppImage
+          
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps/
+          
+          cp build/MASTERCHIP8 AppDir/usr/bin/
+          cp masterchip8.desktop AppDir/
+          cp masterchip8.png AppDir/usr/share/icons/hicolor/256x256/apps/masterchip8.png
+          
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/masterchip8.desktop -appimage -unsupported-allow-new-glibc
+          
+          mv MASTERCHIP8*.AppImage MASTERCHIP8-linux.AppImage
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MASTERCHIP8-linux-${{ needs.check-version.outputs.version }}
+          path: MASTERCHIP8-linux.AppImage
 
   deploy-windows:
     needs: check-version
@@ -41,117 +97,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set reusable strings
-        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-        id: strings
-        shell: bash
-        run: |
-          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-      - name: Install Python
-        uses: actions/setup-python@v5
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
         with:
-          python-version: '3.x'
+          version: '6.6.0'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_mingw'
 
       - name: Install Conan
         run: pip install conan
 
-      - name: Detect Conan profile
-        run: conan profile detect
+      - name: Install Dependencies (Conan)
+        run: |
+          conan profile detect
+          conan install . --build=missing -s build_type=Release -s compiler.cppstd=17
 
-      - name: Install dependencies - Windows
+      - name: Build
         shell: bash
         run: |
-          conan install . -s build_type=Release \
-          -s compiler.cppstd=20
-
-      - name: Configure CMake - Windows
-        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.build-output-dir }}/generators/conan_toolchain.cmake
-          -S ${{ github.workspace }}
-
-      - name: Build Windows binary
-        run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=$(pwd)
           cmake --build build --config Release
-        shell: bash
 
-      - name: Package Windows binary
+      - name: Deploy (windeployqt)
+        shell: bash
         run: |
-          mkdir -p artifacts
-          cp build/Release/MASTERCHIP8.exe artifacts/
-        shell: bash
+          mkdir dist
+          cp build/MASTERCHIP8.exe dist/
+          windeployqt dist/MASTERCHIP8.exe --no-translations --no-system-d3d-compiler
 
-      - name: Upload Windows artifact
+      - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
           name: MASTERCHIP8-windows-${{ needs.check-version.outputs.version }}
-          path: artifacts/
-
-  deploy-linux:
-    needs: check-version
-    if: needs.check-version.outputs.deploy == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set reusable strings
-        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-        id: strings
-        shell: bash
-        run: |
-          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Install Conan
-        run: pip install conan
-
-      - name: Detect Conan profile
-        run: conan profile detect
-
-      - name: Install dependencies - Linux
-        run: |
-          conan install . --build=missing -s build_type=Release \
-          -s compiler.cppstd=20 \
-          -c tools.system.package_manager:mode=install \
-          -c tools.system.package_manager:sudo=True \
-          -s compiler.cppstd=gnu20
-
-      - name: Configure CMake - Linux
-        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: |
-          cmake -B ${{ steps.strings.outputs.build-output-dir }} \
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.build-output-dir }}/Release/generators/conan_toolchain.cmake \
-          -S ${{ github.workspace }}
-
-      - name: Build Linux binary
-        run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --parallel
-        shell: bash
-
-      - name: Package Linux binary
-        run: |
-          mkdir -p artifacts
-          cp build/MASTERCHIP8 artifacts/
-        shell: bash
-
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: MASTERCHIP8-linux-${{ needs.check-version.outputs.version }}
-          path: artifacts/
+          path: dist/
