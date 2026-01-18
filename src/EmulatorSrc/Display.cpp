@@ -4,9 +4,9 @@ namespace SuperChip8
 {
     Display::Display()
     {
-        for (int i = 0; i < 128; i++)
+        for (int i = 0; i < 64; i++)
         {
-            for (int j = 0; j < 64; j++)
+            for (int j = 0; j < 32; j++)
                 pixels[i][j] = false;
         }
     }

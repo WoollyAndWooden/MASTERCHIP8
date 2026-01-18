@@ -12,6 +12,7 @@ find_package(GTest REQUIRED)
 
 add_executable(MASTERCHIP8 src/main.cpp
         src/QtWindows/mainwindow.h src/QtWindows/mainwindow.cpp src/QtWindows/mainwindow.ui
+        src/QtWindows/SettingsDialog.h src/QtWindows/SettingsDialog.cpp src/QtWindows/SettingsDialog.ui
         src/QtWindows/EmulatorDisplay.h src/QtWindows/EmulatorDisplay.cpp
         src/EmulatorSrc/SuperChip8.cpp
         src/EmulatorSrc/SuperChip8.h

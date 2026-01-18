@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "SettingsDialog.h"
 #include <portable-file-dialogs.h>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -86,11 +87,71 @@ MainWindow::MainWindow(QWidget *parent)
            updateDebugInfo();
        }
     });
+
+    // Settings Dialog
+    connect(ui->actionPreferences, &QAction::triggered, this, [this]() {
+        SettingsDialog dialog(this,
+            ui->MasterChip8Display->getPixelColor(),
+            ui->MasterChip8Display->getBackgroundColor(),
+            ui->MasterChip8Display->isGridEnabled()
+        );
+        if (dialog.exec() == QDialog::Accepted) {
+            ui->MasterChip8Display->setColors(dialog.getPixelColor(), dialog.getBackgroundColor());
+            ui->MasterChip8Display->setGridEnabled(dialog.isGridEnabled());
+        }
+    });
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (emulator) {
+        int key = mapKey(event->key());
+        if (key != -1) {
+            emulator->setKey(key, true);
+        }
+    }
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+    if (emulator) {
+        int key = mapKey(event->key());
+        if (key != -1) {
+            emulator->setKey(key, false);
+        }
+    }
+}
+
+int MainWindow::mapKey(int qtKey)
+{
+    switch (qtKey) {
+        case Qt::Key_1: return 0x1;
+        case Qt::Key_2: return 0x2;
+        case Qt::Key_3: return 0x3;
+        case Qt::Key_4: return 0xC;
+
+        case Qt::Key_Q: return 0x4;
+        case Qt::Key_W: return 0x5;
+        case Qt::Key_E: return 0x6;
+        case Qt::Key_R: return 0xD;
+
+        case Qt::Key_A: return 0x7;
+        case Qt::Key_S: return 0x8;
+        case Qt::Key_D: return 0x9;
+        case Qt::Key_F: return 0xE;
+
+        case Qt::Key_Z: return 0xA;
+        case Qt::Key_X: return 0x0;
+        case Qt::Key_C: return 0xB;
+        case Qt::Key_V: return 0xF;
+
+        default: return -1;
+    }
 }
 
 void MainWindow::setupDebugTable()

@@ -2,6 +2,7 @@
 #include <QMainWindow>
 #include <memory>
 #include <QTimer>
+#include <QKeyEvent>
 #include "../EmulatorSrc/SuperChip8.h"
 
 namespace Ui {
@@ -16,6 +17,10 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
+
 private:
     Ui::MainWindow *ui;
     std::unique_ptr<SuperChip8::SuperChip8> emulator;
@@ -24,4 +29,5 @@ private:
 
     void setupDebugTable();
     void updateDebugInfo();
+    int mapKey(int qtKey);
 };
