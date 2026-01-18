@@ -88,7 +88,7 @@ namespace SuperChip8
     {
         opcode = memory.read_opcode(registers.get_PC());
 
-        registers.set_PC(registers.get_PC() + 2);
+        registers.increase_PC();
 
         (this->*jumptable_first[get_first()])();
     }
@@ -123,16 +123,35 @@ namespace SuperChip8
             for (int j = 0; j < 64; j++)
                 display.set_pixel(i, j, false);
     }
-    void SuperChip8::ret_00EE() {}
+    void SuperChip8::ret_00EE()
+    {
+        registers.set_PC(registers.pop_stack());
+    }
 
     void SuperChip8::set_1()
     {
         registers.set_PC(get_NNN());
     }
-    void SuperChip8::set_2() {}
-    void SuperChip8::set_3() {}
-    void SuperChip8::set_4() {}
-    void SuperChip8::set_5() {}
+    void SuperChip8::set_2()
+    {
+        registers.push_stack(registers.get_PC());
+        registers.set_PC(get_NNN());
+    }
+    void SuperChip8::set_3()
+    {
+        if (registers.get_V(get_X()) == get_NN())
+            registers.increase_PC();
+    }
+    void SuperChip8::set_4()
+    {
+        if (registers.get_V(get_X()) != get_NN())
+            registers.increase_PC();
+    }
+    void SuperChip8::set_5()
+    {
+        if (registers.get_V(get_X()) == registers.get_V(get_Y()))
+            registers.increase_PC();
+    }
     void SuperChip8::set_6()
     {
         registers.set_V(get_X(), get_NN());
@@ -146,23 +165,78 @@ namespace SuperChip8
     {
         (this->*jumptable_8[get_N()])();
     }
-    void SuperChip8::set_8XY0() {}
-    void SuperChip8::or_8XY1() {}
-    void SuperChip8::and_8XY2() {}
-    void SuperChip8::xor_8XY3() {}
-    void SuperChip8::add_8XY4() {}
-    void SuperChip8::sub_8XY5() {}
-    void SuperChip8::shift_8XY6() {}
-    void SuperChip8::subn_8XY7() {}
-    void SuperChip8::shift_8XYE() {}
+    void SuperChip8::set_8XY0()
+    {
+        registers.set_V(get_X(), registers.get_V(get_Y()));
+    }
+    void SuperChip8::or_8XY1()
+    {
+        registers.set_V(get_X(), registers.get_V(get_X()) | registers.get_V(get_Y()));
+    }
+    void SuperChip8::and_8XY2()
+    {
+        registers.set_V(get_X(), registers.get_V(get_X()) & registers.get_V(get_Y()));
+    }
+    void SuperChip8::xor_8XY3()
+    {
+        registers.set_V(get_X(), registers.get_V(get_X()) ^ registers.get_V(get_Y()));
+    }
+    void SuperChip8::add_8XY4()
+    {
+        uint16_t sum = registers.get_V(get_X()) + registers.get_V(get_Y());
+        if (sum > 0xFF)
+            registers.set_V(0xF, 1);
+        else
+            registers.set_V(0xF, 0);
+        registers.set_V(get_X(), sum & 0xFF);
+    }
+    void SuperChip8::sub_8XY5()
+    {
+        if (registers.get_V(get_X()) > registers.get_V(get_Y()))
+            registers.set_V(0xF, 1);
+        else
+            registers.set_V(0xF, 0);
+        registers.set_V(get_X(), (registers.get_V(get_X()) - registers.get_V(get_Y()) % 255));
+    }
+    void SuperChip8::shift_8XY6()
+    {
+        //TODO: Implement minor quirks as specified in docs
+        registers.set_V(0xF, registers.get_V(get_X()) & 0x1);
+        registers.set_V(get_X(), registers.get_V(get_X()) >> 1);
+    }
+    void SuperChip8::subn_8XY7()
+    {
+        if (registers.get_V(get_Y()) > registers.get_V(get_X()))
+            registers.set_V(0xF, 1);
+        else
+            registers.set_V(0xF, 0);
+        registers.set_V(get_X(), (registers.get_V(get_Y()) - registers.get_V(get_X()) % 255));
+    }
+    void SuperChip8::shift_8XYE()
+    {
+        //TODO: Implement minor quirks as specified in docs
+        registers.set_V(0xF, registers.get_V(get_X()) >> 7);
+        registers.set_V(get_X(), registers.get_V(get_X()) << 1);
+    }
 
-    void SuperChip8::set_9() {}
+    void SuperChip8::set_9()
+    {
+        if (registers.get_V(get_X()) != registers.get_V(get_Y()))
+            registers.increase_PC();
+    }
     void SuperChip8::set_A()
     {
         registers.set_I(get_NNN());
     }
-    void SuperChip8::set_B() {}
-    void SuperChip8::set_C() {}
+    void SuperChip8::set_B()
+    {
+        //TODO: Another quirky one, look up the docs
+        registers.set_PC(get_NNN() + registers.get_V(0));
+    }
+    void SuperChip8::set_C()
+    {
+        registers.set_V(get_X(), (rand() % 256) & get_NN());
+    }
     void SuperChip8::set_D()
     {
         registers.set_V(0xF, 0);
@@ -198,26 +272,50 @@ namespace SuperChip8
     {
         (this->*jumptable_E[get_N()])();
     }
-    void SuperChip8::skip_EX9E() {}
-    void SuperChip8::skip_EXA1() {}
+    void SuperChip8::skip_EX9E()
+    {
+        //TODO: Implement keys and keyboard
+    }
+    void SuperChip8::skip_EXA1()
+    {
+        //TODO: Implement keys and keyboard
+    }
 
     void SuperChip8::set_F()
     {
         (this->*jumptable_F[get_N()])();
     }
     void SuperChip8::decimal_conv_FX33() {}
-    void SuperChip8::set_FX07() {}
+    void SuperChip8::set_FX07()
+    {
+        registers.set_V(get_X(), registers.get_delay_timer());
+    }
     void SuperChip8::set_FXY5()
     {
         (this->*jumptable_F_Y__[get_Y()])();
     }
-    void SuperChip8::set_FX15() {}
+    void SuperChip8::set_FX15()
+    {
+        registers.set_delay_timer(registers.get_V(get_X()));
+    }
     void SuperChip8::store_FX55() {}
     void SuperChip8::load_FX65() {}
-    void SuperChip8::set_FX18() {}
-    void SuperChip8::font_FX29() {}
-    void SuperChip8::add_to_I_FX1E() {}
-    void SuperChip8::get_key_FX0A() {}
+    void SuperChip8::set_FX18()
+    {
+        registers.set_sound_timer(registers.get_V(get_X()));
+    }
+    void SuperChip8::font_FX29()
+    {
+        //TODO: Eeeeeh?
+    }
+    void SuperChip8::add_to_I_FX1E()
+    {
+        registers.set_I(registers.get_I() + registers.get_V(get_X()));
+    }
+    void SuperChip8::get_key_FX0A()
+    {
+        //TODO: Implement keys and keyboard
+    }
 
     void SuperChip8::OP_NULL() {}
 

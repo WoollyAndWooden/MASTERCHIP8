@@ -12,6 +12,7 @@ namespace SuperChip8
         Registers();
         uint16_t get_PC();
         void set_PC(uint16_t value);
+        void increase_PC();
         uint8_t get_V(uint8_t index);
         void set_V(uint8_t index, uint8_t value);
         uint16_t get_I();
