@@ -27,7 +27,7 @@ jobs:
   deploy-linux:
     needs: check-version
     if: needs.check-version.outputs.deploy == 'true'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04 # Downgrade to 20.04 for better AppImage compatibility
     steps:
       - uses: actions/checkout@v4
 
@@ -88,10 +88,8 @@ jobs:
           # Verify Qt environment
           qmake -v
           
-          # Check binary dependencies
-          ldd build/MASTERCHIP8
-          
           # Run linuxdeployqt with verbose output and no translations
+          # Note: -unsupported-allow-new-glibc might not be needed on 20.04, but keeping it is safe
           ./linuxdeployqt-continuous-x86_64.AppImage AppDir/masterchip8.desktop -appimage -unsupported-allow-new-glibc -verbose=2 -no-translations
           
           mv MASTERCHIP8*.AppImage MASTERCHIP8-linux.AppImage
