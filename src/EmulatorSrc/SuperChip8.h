@@ -19,6 +19,9 @@ namespace SuperChip8
 
         void SCHIP8MODE_switch(bool schip8mode);
 
+        // Input Interface
+        void setKey(uint8_t key, bool pressed);
+
         Display display;
         Memory memory;
         Registers registers;
@@ -30,6 +33,9 @@ namespace SuperChip8
 
         //Emulator mode
         bool SCHIP8MODE = false;
+
+        // Key state (You will use this in your opcodes)
+        bool keys[16] = {false};
 
         //Functions to grab required bits from opcode
         uint8_t get_first() const {return (opcode & 0xF000) >> 12;}

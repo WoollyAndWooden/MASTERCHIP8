@@ -9,13 +9,26 @@ EmulatorDisplay::EmulatorDisplay(QWidget *parent)
 void EmulatorDisplay::setDisplay(SuperChip8::Display* display)
 {
     m_display = display;
-    update(); // Trigger a repaint
+    update();
+}
+
+void EmulatorDisplay::setColors(QColor pixel, QColor bg)
+{
+    m_pixelColor = pixel;
+    m_bgColor = bg;
+    update();
+}
+
+void EmulatorDisplay::setGridEnabled(bool enabled)
+{
+    m_gridEnabled = enabled;
+    update();
 }
 
 void EmulatorDisplay::initializeGL()
 {
     initializeOpenGLFunctions();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black background
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void EmulatorDisplay::resizeGL(int w, int h)
@@ -24,17 +37,19 @@ void EmulatorDisplay::resizeGL(int w, int h)
 
 void EmulatorDisplay::paintGL()
 {
+    // Use the background color for clearing
+    glClearColor(m_bgColor.redF(), m_bgColor.greenF(), m_bgColor.blueF(), 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     if (!m_display) {
-        return; // Draw nothing (black) if no emulator is loaded
+        return;
     }
 
     QPainter painter(this);
 
-    // CHIP-8 Super resolution
-    const int chipWidth = 128;
-    const int chipHeight = 64;
+    // CHIP-8 Standard resolution
+    const int chipWidth = 64;
+    const int chipHeight = 32;
     const float targetAspectRatio = static_cast<float>(chipWidth) / chipHeight;
 
     int w = width();
@@ -45,7 +60,6 @@ void EmulatorDisplay::paintGL()
     int xOffset = 0;
     int yOffset = 0;
 
-    // Calculate aspect preserving dimensions (Letterboxing)
     if (static_cast<float>(w) / h > targetAspectRatio) {
         drawWidth = static_cast<int>(h * targetAspectRatio);
         xOffset = (w - drawWidth) / 2;
@@ -58,15 +72,25 @@ void EmulatorDisplay::paintGL()
     float pixelH = static_cast<float>(drawHeight) / chipHeight;
 
     painter.setPen(Qt::NoPen);
-    painter.setBrush(Qt::yellow); // Classic monochrome color
+    painter.setBrush(m_pixelColor);
 
     painter.translate(xOffset, yOffset);
 
-    // Draw pixels from the Emulator's Display memory
     for (int y = 0; y < chipHeight; ++y) {
         for (int x = 0; x < chipWidth; ++x) {
             if (m_display->getPixel(x, y)) {
-                painter.drawRect(QRectF(x * pixelW, y * pixelH, pixelW, pixelH));
+                if (m_gridEnabled) {
+                    // Draw slightly smaller rect to show grid
+                    // Reduce size by 10% or at least 1 pixel
+                    float gapX = pixelW * 0.1f;
+                    float gapY = pixelH * 0.1f;
+                    if (gapX < 1.0f) gapX = 1.0f;
+                    if (gapY < 1.0f) gapY = 1.0f;
+
+                    painter.drawRect(QRectF(x * pixelW + gapX/2, y * pixelH + gapY/2, pixelW - gapX, pixelH - gapY));
+                } else {
+                    painter.drawRect(QRectF(x * pixelW, y * pixelH, pixelW, pixelH));
+                }
             }
         }
     }
