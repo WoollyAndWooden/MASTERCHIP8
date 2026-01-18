@@ -68,7 +68,9 @@ jobs:
           echo "Exec=MASTERCHIP8" >> masterchip8.desktop
           echo "Icon=masterchip8" >> masterchip8.desktop
           echo "Categories=Game;" >> masterchip8.desktop
-          touch masterchip8.png
+          
+          # Download a valid dummy icon instead of creating an empty file
+          wget https://raw.githubusercontent.com/probonopd/linuxdeployqt/master/tests/appimage/appdir/usr/share/icons/hicolor/256x256/apps/icon.png -O masterchip8.png
 
       - name: Deploy (AppImage)
         run: |
