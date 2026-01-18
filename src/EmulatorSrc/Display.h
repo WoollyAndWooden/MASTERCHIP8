@@ -11,6 +11,6 @@ namespace SuperChip8
         void set_pixel(int width, int height, bool pixel);
         bool getPixel(int width, int height);
     private:
-        std::array<std::array<bool, 128>, 64> pixels;
+        std::array<std::array<bool, 64>, 128> pixels;
     };
 }
