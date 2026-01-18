@@ -105,7 +105,7 @@ jobs:
           version: '6.6.0'
           host: 'windows'
           target: 'desktop'
-          arch: 'win64_mingw'
+          arch: 'win64_msvc2019_64'
 
       - name: Install Conan
         run: pip install conan
@@ -121,14 +121,16 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="${{ github.workspace }}/build/Release/generators;${{ github.workspace }}/build/generators;${{ github.workspace }}"
+          # Use default generator (Visual Studio)
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ github.workspace }}/build/Release/generators;${{ github.workspace }}/build/generators;${{ github.workspace }}"
           cmake --build build --config Release
 
       - name: Deploy (windeployqt)
         shell: bash
         run: |
           mkdir dist
-          cp build/MASTERCHIP8.exe dist/
+          # VS generator puts binary in Release/
+          cp build/Release/MASTERCHIP8.exe dist/
           windeployqt dist/MASTERCHIP8.exe --no-translations --no-system-d3d-compiler
 
       - name: Upload Windows Artifact
