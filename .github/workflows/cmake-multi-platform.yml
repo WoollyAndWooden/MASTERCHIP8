@@ -51,12 +51,14 @@ jobs:
     - name: Install Dependencies (Conan)
       run: |
         conan profile detect
-        conan install . --build=missing -s build_type=Release -s compiler.cppstd=17
+        conan install . --build=missing -s build_type=Release -s compiler.cppstd=17 \
+        -c tools.system.package_manager:mode=install \
+        -c tools.system.package_manager:sudo=True
 
     - name: Configure CMake
       shell: bash
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -G "${{ matrix.generator }}" -DCMAKE_PREFIX_PATH=$(pwd)
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -G "${{ matrix.generator }}" -DCMAKE_PREFIX_PATH="${{ github.workspace }}/build/Release/generators;${{ github.workspace }}/build/generators;${{ github.workspace }}"
 
     - name: Build
       shell: bash
