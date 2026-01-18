@@ -42,7 +42,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils libfuse2
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils libfuse2 imagemagick
 
       - name: Install Conan
         run: pip install conan
@@ -69,8 +69,8 @@ jobs:
           echo "Icon=masterchip8" >> masterchip8.desktop
           echo "Categories=Game;" >> masterchip8.desktop
           
-          # Download a valid dummy icon (GitHub logo)
-          wget https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png -O masterchip8.png
+          # Generate a simple valid PNG icon
+          convert -size 256x256 xc:blue masterchip8.png
 
       - name: Deploy (AppImage)
         run: |
@@ -87,8 +87,11 @@ jobs:
           # Verify Qt environment
           qmake -v
           
-          # Run linuxdeployqt with verbose output
-          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/masterchip8.desktop -appimage -unsupported-allow-new-glibc -verbose=2
+          # List AppDir for debugging
+          find AppDir
+          
+          # Run linuxdeployqt with verbose output and no translations
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/masterchip8.desktop -appimage -unsupported-allow-new-glibc -verbose=2 -no-translations
           
           mv MASTERCHIP8*.AppImage MASTERCHIP8-linux.AppImage
 
