@@ -83,12 +83,13 @@ jobs:
           cp build/MASTERCHIP8 AppDir/usr/bin/
           cp masterchip8.desktop AppDir/
           cp masterchip8.png AppDir/usr/share/icons/hicolor/256x256/apps/masterchip8.png
+          cp masterchip8.png AppDir/.DirIcon
           
           # Verify Qt environment
           qmake -v
           
-          # List AppDir for debugging
-          find AppDir
+          # Check binary dependencies
+          ldd build/MASTERCHIP8
           
           # Run linuxdeployqt with verbose output and no translations
           ./linuxdeployqt-continuous-x86_64.AppImage AppDir/masterchip8.desktop -appimage -unsupported-allow-new-glibc -verbose=2 -no-translations
