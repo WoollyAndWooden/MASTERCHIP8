@@ -48,6 +48,7 @@ jobs:
         run: pip install conan
 
       - name: Install Dependencies (Conan)
+        shell: bash
         run: |
           conan profile detect
           conan install . --build=missing -s build_type=Release -s compiler.cppstd=17 \
@@ -56,7 +57,6 @@ jobs:
 
       - name: Build
         run: |
-          # Point CMAKE_PREFIX_PATH to where Conan generates files (likely build/Release/generators or build/generators)
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ github.workspace }}/build/Release/generators;${{ github.workspace }}/build/generators;${{ github.workspace }}"
           cmake --build build --parallel
 
@@ -111,9 +111,12 @@ jobs:
         run: pip install conan
 
       - name: Install Dependencies (Conan)
+        shell: bash
         run: |
           conan profile detect
-          conan install . --build=missing -s build_type=Release -s compiler.cppstd=17
+          conan install . --build=missing -s build_type=Release -s compiler.cppstd=17 \
+          -c tools.system.package_manager:mode=install \
+          -c tools.system.package_manager:sudo=True
 
       - name: Build
         shell: bash
