@@ -69,8 +69,8 @@ jobs:
           echo "Icon=masterchip8" >> masterchip8.desktop
           echo "Categories=Game;" >> masterchip8.desktop
           
-          # Download a valid dummy icon instead of creating an empty file
-          wget https://raw.githubusercontent.com/probonopd/linuxdeployqt/master/tests/appimage/appdir/usr/share/icons/hicolor/256x256/apps/icon.png -O masterchip8.png
+          # Download a valid dummy icon (GitHub logo)
+          wget https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png -O masterchip8.png
 
       - name: Deploy (AppImage)
         run: |
