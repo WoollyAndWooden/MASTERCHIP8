@@ -17,8 +17,8 @@ jobs:
         build_type: [Release]
         include:
           - os: windows-latest
-            qt_arch: win64_mingw
-            generator: "MinGW Makefiles"
+            qt_arch: win64_msvc2019_64
+            # No generator specified = Default (Visual Studio)
           - os: ubuntu-22.04
             qt_arch: gcc_64
             generator: "Unix Makefiles"
@@ -59,7 +59,11 @@ jobs:
     - name: Configure CMake
       shell: bash
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -G "${{ matrix.generator }}" -DCMAKE_PREFIX_PATH="${{ github.workspace }}/build/Release/generators;${{ github.workspace }}/build/generators;${{ github.workspace }}"
+        if [ "${{ runner.os }}" == "Windows" ]; then
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH="${{ github.workspace }}/build/Release/generators;${{ github.workspace }}/build/generators;${{ github.workspace }}"
+        else
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -G "${{ matrix.generator }}" -DCMAKE_PREFIX_PATH="${{ github.workspace }}/build/Release/generators;${{ github.workspace }}/build/generators;${{ github.workspace }}"
+        fi
 
     - name: Build
       shell: bash
