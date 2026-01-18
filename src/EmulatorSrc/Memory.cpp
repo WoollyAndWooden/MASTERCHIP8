@@ -6,6 +6,9 @@ namespace SuperChip8
 {
     Memory::Memory()
     {
+        // Initialize memory to 0
+        memory.fill(0);
+
         std::array<uint8_t, 80> fonts = {
             0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
             0x20, 0x60, 0x20, 0x20, 0x70, // 1
