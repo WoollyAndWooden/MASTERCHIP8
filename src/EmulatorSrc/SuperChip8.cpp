@@ -107,16 +107,6 @@ namespace SuperChip8
         cycles_per_tick = value;
     }
 
-    void SuperChip8::SCHIP8MODE_switch(bool schip8mode)
-    {
-        SCHIP8MODE = schip8mode;
-    }
-
-    void SuperChip8::setKey(uint8_t key, bool pressed)
-    {
-        keys[key] = pressed;
-    }
-
     // --- Opcode Implementations ---
 
     void SuperChip8::set_0()
@@ -286,11 +276,13 @@ namespace SuperChip8
     }
     void SuperChip8::skip_EX9E()
     {
-        //TODO: Implement keys and keyboard
+        if (keyboard.is_pressed(registers.get_V(get_X())))
+            registers.increase_PC();
     }
     void SuperChip8::skip_EXA1()
     {
-        //TODO: Implement keys and keyboard
+        if (!keyboard.is_pressed(registers.get_V(get_X())))
+            registers.increase_PC();
     }
 
     void SuperChip8::set_F()
@@ -338,9 +330,28 @@ namespace SuperChip8
     {
         registers.set_I(registers.get_I() + registers.get_V(get_X()));
     }
+
+    uint8_t FXOA_helper_key_check = 16;
+    bool FX0A_helper_was_pressed = false;
     void SuperChip8::get_key_FX0A()
     {
-        //TODO: Implement keys and keyboard
+        for (int i = 0; i < 16; i++)
+        {
+            if (keyboard.is_pressed(i) || FX0A_helper_was_pressed)
+            {
+                FX0A_helper_was_pressed = true;
+                if (FXOA_helper_key_check >= 16)
+                    FXOA_helper_key_check = i;
+                if (!keyboard.is_pressed(FXOA_helper_key_check))
+                {
+                    registers.set_V(get_X(), FXOA_helper_key_check);
+                    FXOA_helper_key_check = 16;
+                    FX0A_helper_was_pressed = false;
+                    return;
+                }
+            }
+        }
+        registers.decrease_PC();
     }
 
     void SuperChip8::OP_NULL()

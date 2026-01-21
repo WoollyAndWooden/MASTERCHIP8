@@ -2,6 +2,7 @@
 #include <string>
 
 #include "Display.h"
+#include "Keyboard.h"
 #include "Memory.h"
 #include "Registers.h"
 
@@ -17,25 +18,15 @@ namespace SuperChip8
 
         void change_cycles_per_tick(uint8_t value);
 
-        void SCHIP8MODE_switch(bool schip8mode);
-
-        // Input Interface
-        void setKey(uint8_t key, bool pressed);
-
         Display display;
         Memory memory;
         Registers registers;
+        Keyboard keyboard;
 
     private:
         uint8_t cycles_per_tick = 10;
 
         uint16_t opcode;
-
-        //Emulator mode
-        bool SCHIP8MODE = false;
-
-        // Key state (You will use this in your opcodes)
-        bool keys[16] = {false};
 
         //Functions to grab required bits from opcode
         uint8_t get_first() const {return (opcode & 0xF000) >> 12;}

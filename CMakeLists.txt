@@ -7,7 +7,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(portable-file-dialogs CONFIG REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets Multimedia)
 find_package(GTest REQUIRED)
 
 add_executable(MASTERCHIP8 src/main.cpp
@@ -22,12 +22,14 @@ add_executable(MASTERCHIP8 src/main.cpp
         src/EmulatorSrc/Memory.h
         src/EmulatorSrc/Registers.cpp
         src/EmulatorSrc/Registers.h
+        src/EmulatorSrc/Keyboard.cpp
+        src/EmulatorSrc/Keyboard.h
 )
 
 include_directories(src/QtWindows src/EmulatorSrc)
 
 target_link_libraries(MASTERCHIP8 PRIVATE
-        Qt6::Widgets Qt6::OpenGLWidgets
+        Qt6::Widgets Qt6::OpenGLWidgets Qt6::Multimedia
         portable-file-dialogs::portable-file-dialogs)
 
 set_target_properties(MASTERCHIP8 PROPERTIES
@@ -52,6 +54,8 @@ add_executable(MASTERCHIP8_Tests
         src/EmulatorSrc/Memory.h
         src/EmulatorSrc/Registers.cpp
         src/EmulatorSrc/Registers.h
+        src/EmulatorSrc/Keyboard.cpp
+        src/EmulatorSrc/Keyboard.h
 )
 
 target_include_directories(MASTERCHIP8_Tests PRIVATE src/EmulatorSrc)

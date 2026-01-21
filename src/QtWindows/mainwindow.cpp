@@ -2,6 +2,52 @@
 #include "ui_mainwindow.h"
 #include "SettingsDialog.h"
 #include <portable-file-dialogs.h>
+#include <QMediaDevices>
+#include <QAudioDevice>
+
+// --- BeepGenerator Implementation ---
+BeepGenerator::BeepGenerator(QObject* parent) : QIODevice(parent)
+{
+}
+
+void BeepGenerator::start()
+{
+    open(QIODevice::ReadOnly);
+}
+
+void BeepGenerator::stop()
+{
+    close();
+}
+
+qint64 BeepGenerator::readData(char *data, qint64 maxlen)
+{
+    // Generate square wave (440Hz at 44100Hz sample rate)
+    // Period = 100 samples
+    const int period = 100;
+
+    for (qint64 i = 0; i < maxlen; ++i) {
+        if ((m_pos % period) < (period / 2)) {
+            data[i] = 127; // High
+        } else {
+            data[i] = -128; // Low
+        }
+        m_pos++;
+    }
+    return maxlen;
+}
+
+qint64 BeepGenerator::writeData(const char *data, qint64 len)
+{
+    return 0;
+}
+
+qint64 BeepGenerator::bytesAvailable() const
+{
+    return 1024 + QIODevice::bytesAvailable(); // Always have data
+}
+
+// --- MainWindow Implementation ---
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -11,6 +57,24 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupDebugTable();
 
+    // Initialize Audio
+    QAudioFormat format;
+    format.setSampleRate(44100);
+    format.setChannelCount(1);
+    format.setSampleFormat(QAudioFormat::UInt8);
+
+    QAudioDevice device = QMediaDevices::defaultAudioOutput();
+    if (!device.isFormatSupported(format)) {
+        format = device.preferredFormat();
+    }
+
+    m_audioSink = new QAudioSink(device, format, this);
+    m_beepGen = new BeepGenerator(this);
+    m_beepGen->start();
+
+    // Do NOT start audio here to prevent initial beep
+    // It will be started in updateAudio() when needed
+
     // Initialize the timer
     emulationTimer = new QTimer(this);
     connect(emulationTimer, &QTimer::timeout, this, [this]() {
@@ -18,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
             emulator->Tick();
             ui->MasterChip8Display->update();
             updateDebugInfo();
+            updateAudio();
         }
     });
 
@@ -25,6 +90,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnPause, &QPushButton::clicked, this, [this]() {
         if (emulationTimer->isActive()) {
             emulationTimer->stop();
+            if (m_audioSink->state() == QAudio::ActiveState) {
+                m_audioSink->suspend();
+            }
             ui->btnDecreaseCycles->setEnabled(true);
             ui->btnIncreaseCycles->setEnabled(true);
         }
@@ -70,6 +138,9 @@ MainWindow::MainWindow(QWidget *parent)
        auto selection = pfd::open_file("Select ROM", "./ROM/", {"CHIP-8 ROMs", "*.ch8"}).result();
        if (!selection.empty()) {
            emulationTimer->stop();
+           if (m_audioSink->state() == QAudio::ActiveState) {
+               m_audioSink->suspend();
+           }
 
            std::string filename = selection[0];
            emulator = std::make_unique<SuperChip8::SuperChip8>(filename);
@@ -107,12 +178,29 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::updateAudio()
+{
+    if (!emulator) return;
+
+    if (emulator->registers.get_sound_timer() > 0) {
+        if (m_audioSink->state() == QAudio::StoppedState) {
+            m_audioSink->start(m_beepGen);
+        } else if (m_audioSink->state() == QAudio::SuspendedState) {
+            m_audioSink->resume();
+        }
+    } else {
+        if (m_audioSink->state() == QAudio::ActiveState) {
+            m_audioSink->suspend();
+        }
+    }
+}
+
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (emulator) {
         int key = mapKey(event->key());
         if (key != -1) {
-            emulator->setKey(key, true);
+            emulator->keyboard.press_key(key);
         }
     }
 }
@@ -122,7 +210,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
     if (emulator) {
         int key = mapKey(event->key());
         if (key != -1) {
-            emulator->setKey(key, false);
+            emulator->keyboard.release_key(key);
         }
     }
 }

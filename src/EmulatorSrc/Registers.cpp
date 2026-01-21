@@ -17,6 +17,11 @@ namespace SuperChip8
         PC += 2;
     }
 
+    void Registers::decrease_PC()
+    {
+        PC -= 2;
+    }
+
     uint8_t Registers::get_V(uint8_t index)
     {
         return V[index];
