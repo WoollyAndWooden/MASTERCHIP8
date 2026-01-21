@@ -64,7 +64,8 @@ TEST_F(DisplayTest, PixelIndependence) {
 // Test 4: Default Initialization
 TEST_F(DisplayTest, DefaultInitialization) {
     // Verify a few random pixels are false initially
+    // Updated for 64x32 resolution
     EXPECT_FALSE(display.getPixel(0, 0));
-    EXPECT_FALSE(display.getPixel(127, 63));
-    EXPECT_FALSE(display.getPixel(64, 32));
+    EXPECT_FALSE(display.getPixel(63, 31)); // Max valid coordinate
+    EXPECT_FALSE(display.getPixel(32, 16)); // Center
 }
