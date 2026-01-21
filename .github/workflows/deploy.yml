@@ -43,7 +43,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils libfuse2
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils libfuse2 imagemagick
 
       - name: Install Conan
         run: pip install conan
@@ -71,16 +71,11 @@ jobs:
           echo "Categories=Game;" >> masterchip8.desktop
           
           # Use custom icon from repo (ensure resources/icon.png exists!)
-          # If it doesn't exist, create a dummy one to prevent failure
           if [ -f resources/icon.png ]; then
             cp resources/icon.png masterchip8.png
           else
             echo "Icon not found, creating dummy"
-            touch masterchip8.png
-            # Try to use convert if available, otherwise it's a 0-byte file (which might fail)
-            if command -v convert >/dev/null 2>&1; then
-                convert -size 256x256 xc:blue masterchip8.png
-            fi
+            convert -size 256x256 xc:blue masterchip8.png
           fi
 
       - name: Deploy (AppImage using linuxdeploy)
@@ -115,7 +110,7 @@ jobs:
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MASTERCHIP8-linux-${{ needs.check-version.outputs.version }}
+          name: MASTERCHIP8-linux
           path: MASTERCHIP8-linux.AppImage
 
   deploy-windows:
@@ -157,9 +152,36 @@ jobs:
           mkdir dist
           cp build/Release/MASTERCHIP8.exe dist/
           windeployqt dist/MASTERCHIP8.exe --no-translations --no-system-d3d-compiler
+          
+          # Zip the dist folder
+          cd dist
+          7z a ../MASTERCHIP8-windows.zip .
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MASTERCHIP8-windows-${{ needs.check-version.outputs.version }}
-          path: dist/
+          name: MASTERCHIP8-windows
+          path: MASTERCHIP8-windows.zip
+
+  release:
+    needs: [deploy-linux, deploy-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: MASTERCHIP8-linux
+          
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: MASTERCHIP8-windows
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            MASTERCHIP8-linux.AppImage
+            MASTERCHIP8-windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
