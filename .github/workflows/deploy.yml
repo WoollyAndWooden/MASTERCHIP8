@@ -27,7 +27,7 @@ jobs:
   deploy-linux:
     needs: check-version
     if: needs.check-version.outputs.deploy == 'true'
-    runs-on: ubuntu-20.04 # Downgrade to 20.04 for better AppImage compatibility
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -86,12 +86,13 @@ jobs:
           cp masterchip8.png AppDir/usr/share/icons/hicolor/256x256/apps/masterchip8.png
           cp masterchip8.png AppDir/.DirIcon
           
-          # Verify Qt environment
-          qmake -v
+          # Find qmake path
+          QMAKE_PATH=$(which qmake)
+          echo "QMake found at: $QMAKE_PATH"
           
-          # Run linuxdeployqt with verbose output and no translations
-          # Note: -unsupported-allow-new-glibc might not be needed on 20.04, but keeping it is safe
-          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/masterchip8.desktop -appimage -unsupported-allow-new-glibc -verbose=2 -no-translations
+          # Run linuxdeployqt with explicit qmake and verbose output
+          # Also adding -bundle-non-qt-libs to be safe
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/masterchip8.desktop -appimage -unsupported-allow-new-glibc -verbose=2 -no-translations -qmake=$QMAKE_PATH
           
           mv MASTERCHIP8*.AppImage MASTERCHIP8-linux.AppImage
 
