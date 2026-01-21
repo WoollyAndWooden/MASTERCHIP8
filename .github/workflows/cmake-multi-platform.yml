@@ -36,6 +36,7 @@ jobs:
         host: ${{ matrix.os == 'windows-latest' && 'windows' || (matrix.os == 'macos-latest' && 'mac' || 'linux') }}
         target: 'desktop'
         arch: ${{ matrix.qt_arch }}
+        modules: 'qtmultimedia'
 
     - name: Install System Dependencies (Linux)
       if: runner.os == 'Linux'
