@@ -43,7 +43,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils libfuse2 imagemagick
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils libfuse2
 
       - name: Install Conan
         run: pip install conan
@@ -70,8 +70,18 @@ jobs:
           echo "Icon=masterchip8" >> masterchip8.desktop
           echo "Categories=Game;" >> masterchip8.desktop
           
-          # Generate a simple valid PNG icon
-          convert -size 256x256 xc:blue masterchip8.png
+          # Use custom icon from repo (ensure resources/icon.png exists!)
+          # If it doesn't exist, create a dummy one to prevent failure
+          if [ -f resources/icon.png ]; then
+            cp resources/icon.png masterchip8.png
+          else
+            echo "Icon not found, creating dummy"
+            touch masterchip8.png
+            # Try to use convert if available, otherwise it's a 0-byte file (which might fail)
+            if command -v convert >/dev/null 2>&1; then
+                convert -size 256x256 xc:blue masterchip8.png
+            fi
+          fi
 
       - name: Deploy (AppImage using linuxdeploy)
         run: |
@@ -84,11 +94,15 @@ jobs:
           
           # Prepare AppDir
           mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/applications
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps/
           
           cp build/MASTERCHIP8 AppDir/usr/bin/
-          cp masterchip8.desktop AppDir/
+          cp masterchip8.desktop AppDir/usr/share/applications/
           cp masterchip8.png AppDir/usr/share/icons/hicolor/256x256/apps/masterchip8.png
+          
+          # Also copy icon to root of AppDir for appimagetool
+          cp masterchip8.png AppDir/
           
           # Set QMAKE path for the plugin
           export QMAKE=$(which qmake)
