@@ -73,26 +73,28 @@ jobs:
           # Generate a simple valid PNG icon
           convert -size 256x256 xc:blue masterchip8.png
 
-      - name: Deploy (AppImage)
+      - name: Deploy (AppImage using linuxdeploy)
         run: |
-          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-          chmod +x linuxdeployqt-continuous-x86_64.AppImage
+          # Download linuxdeploy and qt plugin
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
           
+          chmod +x linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
+          
+          # Prepare AppDir
           mkdir -p AppDir/usr/bin
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps/
           
           cp build/MASTERCHIP8 AppDir/usr/bin/
           cp masterchip8.desktop AppDir/
           cp masterchip8.png AppDir/usr/share/icons/hicolor/256x256/apps/masterchip8.png
-          cp masterchip8.png AppDir/.DirIcon
           
-          # Find qmake path
-          QMAKE_PATH=$(which qmake)
-          echo "QMake found at: $QMAKE_PATH"
+          # Set QMAKE path for the plugin
+          export QMAKE=$(which qmake)
           
-          # Run linuxdeployqt with explicit qmake and verbose output
-          # Also adding -bundle-non-qt-libs to be safe
-          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/masterchip8.desktop -appimage -unsupported-allow-new-glibc -verbose=2 -no-translations -qmake=$QMAKE_PATH
+          # Run linuxdeploy
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin qt --output appimage
           
           mv MASTERCHIP8*.AppImage MASTERCHIP8-linux.AppImage
 
