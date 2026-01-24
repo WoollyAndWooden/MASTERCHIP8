@@ -13,8 +13,9 @@ namespace SuperChip8
 
     bool Display::flipPixel(int width, int height)
     {
+        bool collision = pixels[width][height];
         pixels[width][height] = !pixels[width][height];
-        return pixels[width][height];
+        return collision;
     }
 
     void Display::set_pixel(int width, int height, bool pixel)

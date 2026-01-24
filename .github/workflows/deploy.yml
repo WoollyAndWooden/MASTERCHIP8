@@ -73,8 +73,10 @@ jobs:
           echo "Icon=masterchip8" >> masterchip8.desktop
           echo "Categories=Game;" >> masterchip8.desktop
           
-          # Use custom icon from repo (ensure resources/icon.png exists!)
-          if [ -f resources/icon.png ]; then
+          # Use custom icon from repo
+          if [ -f resources/masterchip8.png ]; then
+            cp resources/masterchip8.png masterchip8.png
+          elif [ -f resources/icon.png ]; then
             cp resources/icon.png masterchip8.png
           else
             echo "Icon not found, creating dummy"

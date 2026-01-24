@@ -255,8 +255,8 @@ namespace SuperChip8
             {
                 if (sprite_row & (0x80) >> j)
                 {
-                    bool flipped = display.flipPixel(X, Y);
-                    if (flipped)
+                    bool collision = display.flipPixel(X, Y);
+                    if (collision)
                         registers.set_V(0xF, 1);
 
                 }

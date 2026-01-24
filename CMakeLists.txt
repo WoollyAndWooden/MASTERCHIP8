@@ -10,7 +10,8 @@ find_package(portable-file-dialogs CONFIG REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets Multimedia)
 find_package(GTest REQUIRED)
 
-add_executable(MASTERCHIP8 src/main.cpp
+set(PROJECT_SOURCES
+        src/main.cpp
         src/QtWindows/mainwindow.h src/QtWindows/mainwindow.cpp src/QtWindows/mainwindow.ui
         src/QtWindows/SettingsDialog.h src/QtWindows/SettingsDialog.cpp src/QtWindows/SettingsDialog.ui
         src/QtWindows/EmulatorDisplay.h src/QtWindows/EmulatorDisplay.cpp
@@ -25,6 +26,12 @@ add_executable(MASTERCHIP8 src/main.cpp
         src/EmulatorSrc/Keyboard.cpp
         src/EmulatorSrc/Keyboard.h
 )
+
+if(WIN32)
+    list(APPEND PROJECT_SOURCES resources/masterchip8.rc)
+endif()
+
+add_executable(MASTERCHIP8 ${PROJECT_SOURCES})
 
 include_directories(src/QtWindows src/EmulatorSrc)
 
