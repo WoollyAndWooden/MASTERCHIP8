@@ -72,9 +72,6 @@ MainWindow::MainWindow(QWidget *parent)
     m_beepGen = new BeepGenerator(this);
     m_beepGen->start();
 
-    // Do NOT start audio here to prevent initial beep
-    // It will be started in updateAudio() when needed
-
     // Initialize the timer
     emulationTimer = new QTimer(this);
     connect(emulationTimer, &QTimer::timeout, this, [this]() {

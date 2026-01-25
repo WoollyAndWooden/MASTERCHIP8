@@ -73,7 +73,6 @@ jobs:
           echo "Icon=masterchip8" >> masterchip8.desktop
           echo "Categories=Game;" >> masterchip8.desktop
           
-          # Use custom icon from repo
           if [ -f resources/masterchip8.png ]; then
             cp resources/masterchip8.png masterchip8.png
           elif [ -f resources/icon.png ]; then
@@ -85,14 +84,12 @@ jobs:
 
       - name: Deploy (AppImage using linuxdeploy)
         run: |
-          # Download linuxdeploy and qt plugin
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
           
           chmod +x linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
           
-          # Prepare AppDir
           mkdir -p AppDir/usr/bin
           mkdir -p AppDir/usr/share/applications
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps/
@@ -101,13 +98,10 @@ jobs:
           cp masterchip8.desktop AppDir/usr/share/applications/
           cp masterchip8.png AppDir/usr/share/icons/hicolor/256x256/apps/masterchip8.png
           
-          # Also copy icon to root of AppDir for appimagetool
           cp masterchip8.png AppDir/
           
-          # Set QMAKE path for the plugin
           export QMAKE=$(which qmake)
           
-          # Run linuxdeploy
           ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin qt --output appimage
           
           mv MASTERCHIP8*.AppImage MASTERCHIP8-linux.AppImage
@@ -158,7 +152,6 @@ jobs:
           cp build/Release/MASTERCHIP8.exe dist/
           windeployqt dist/MASTERCHIP8.exe --no-translations --no-system-d3d-compiler
           
-          # Zip the dist folder
           cd dist
           7z a ../MASTERCHIP8-windows.zip .
 

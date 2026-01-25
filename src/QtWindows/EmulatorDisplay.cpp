@@ -37,7 +37,6 @@ void EmulatorDisplay::resizeGL(int w, int h)
 
 void EmulatorDisplay::paintGL()
 {
-    // Use the background color for clearing
     glClearColor(m_bgColor.redF(), m_bgColor.greenF(), m_bgColor.blueF(), 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -47,7 +46,6 @@ void EmulatorDisplay::paintGL()
 
     QPainter painter(this);
 
-    // CHIP-8 Standard resolution
     const int chipWidth = 64;
     const int chipHeight = 32;
     const float targetAspectRatio = static_cast<float>(chipWidth) / chipHeight;
@@ -80,8 +78,6 @@ void EmulatorDisplay::paintGL()
         for (int x = 0; x < chipWidth; ++x) {
             if (m_display->getPixel(x, y)) {
                 if (m_gridEnabled) {
-                    // Draw slightly smaller rect to show grid
-                    // Reduce size by 10% or at least 1 pixel
                     float gapX = pixelW * 0.1f;
                     float gapY = pixelH * 0.1f;
                     if (gapX < 1.0f) gapX = 1.0f;

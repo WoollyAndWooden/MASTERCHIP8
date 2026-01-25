@@ -30,7 +30,7 @@ target_include_directories(Chip8Core PUBLIC src/EmulatorSrc)
 set_target_properties(Chip8Core PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
-        POSITION_INDEPENDENT_CODE ON # Required for linking into Python module
+        POSITION_INDEPENDENT_CODE ON
 )
 
 # --- Qt Application ---
@@ -86,5 +86,5 @@ target_link_libraries(masterchip8_py PRIVATE Chip8Core)
 set_target_properties(masterchip8_py PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
-    AUTOMOC OFF # Disable Qt automoc for this target
+    AUTOMOC OFF
 )
