@@ -48,11 +48,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils libfuse2 imagemagick
 
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10' 
-
       - name: Install Conan
         run: pip install conan
 
@@ -157,6 +152,17 @@ jobs:
           conan install . --build=missing -s build_type=Release -s compiler.cppstd=17 \
           -c tools.system.package_manager:mode=install \
           -c tools.system.package_manager:sudo=True
+
+      - name: Generate Icon (Windows)
+        shell: bash
+        run: |
+          if [ -f resources/masterchip8.png ]; then
+            magick resources/masterchip8.png resources/icon.ico
+          elif [ -f resources/icon.png ]; then
+            magick resources/icon.png resources/icon.ico
+          else
+            magick -size 256x256 xc:blue resources/icon.ico
+          fi
 
       - name: Build
         shell: bash
