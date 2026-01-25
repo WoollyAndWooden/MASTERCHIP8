@@ -14,6 +14,7 @@ class MASTERCHIP8(ConanFile):
     def requirements(self):
         self.requires("portable-file-dialogs/0.1.0")
         self.requires("gtest/1.14.0")
+        self.requires("pybind11/2.11.1")
 
         if self.settings.os == "Linux":
             self.requires("xorg/system")
