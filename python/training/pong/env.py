@@ -6,10 +6,6 @@ import display_utils
 import time
 
 class PongEnv(gym.Env):
-    """
-    Custom Environment for Pong (1P) on Chip8.
-    Infinite game, score wraps every 10 points.
-    """
     metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 60}
 
     def __init__(self, rom_path, render_mode=None):
@@ -20,6 +16,7 @@ class PongEnv(gym.Env):
         self.cpu = None
         self.screen = None
         self.clock = None
+        self.frame_count = 0
         
         if self.render_mode == "human":
             self.screen = display_utils.init_display()
@@ -43,6 +40,7 @@ class PongEnv(gym.Env):
             
         self.player_score = 0
         self.opponent_score = 0
+        self.frame_count = 0
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -50,16 +48,18 @@ class PongEnv(gym.Env):
         if self.cpu is None:
             self._init_emulator()
         else:
-            pass
+            self._init_emulator()
             
         return self._get_observation(), {}
 
     def step(self, action):
+        self.frame_count += 1
+        
         key = None
         if action == 1:
-            key = 0 
+            key = 1 
         elif action == 2:
-            key = 5 
+            key = 4 
             
         if key is not None:
             self.cpu.press_key(key)
@@ -74,25 +74,42 @@ class PongEnv(gym.Env):
         
         obs = self._get_observation()
         
-        current_p1 = self.cpu.get_register_V(1)
+        reward = 0
+
+        current_p1 = self.cpu.get_register_V(1) 
         current_p2 = self.cpu.get_register_V(2)
         
-        reward = 0
-        terminated = False
-        truncated = False
-        
-        if current_p1 != self.player_score:
-            reward = 1.0 
+        if current_p1 > self.player_score:
+            reward += 10.0 
             print(f"Player Scored! {current_p1}-{current_p2}")
-            
-        elif current_p2 != self.opponent_score:
-            reward = -1.0 
+        elif current_p2 > self.opponent_score:
+            reward -= 10.0 
             print(f"Opponent Scored! {current_p1}-{current_p2}")
-        else:
-            reward = 0
             
         self.player_score = current_p1
         self.opponent_score = current_p2
+        
+        screen_data = obs[:, :, 0]
+        
+        ball_pixels_slice = np.argwhere(screen_data[6:32, 10:54] == 1)
+        
+        paddle_col_idx = 2
+        paddle_pixels = np.argwhere(screen_data[:, paddle_col_idx] == 1)
+        
+        if len(ball_pixels_slice) > 0:
+            ball_y = np.mean(ball_pixels_slice[:, 0]) + 6
+            
+            if len(paddle_pixels) > 0:
+                paddle_top = np.min(paddle_pixels[:, 0])
+                paddle_bottom = np.max(paddle_pixels[:, 0])
+                paddle_center = (paddle_top + paddle_bottom) / 2.0
+                
+                diff = abs(paddle_center - ball_y)
+                alignment_reward = max(0, 1.0 - (diff / 10.0)) 
+                reward += alignment_reward * 0.1
+        
+        terminated = False
+        truncated = False
         
         return obs, reward, terminated, truncated, {}
 
