@@ -63,3 +63,4 @@ TestSuite/
 *.autosave
 
 DONOTADD*
+*.AppImage

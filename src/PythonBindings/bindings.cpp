@@ -15,7 +15,11 @@ PYBIND11_MODULE(masterchip8_py, m)
             .def("release_key", [](SuperChip8::SuperChip8& self, uint8_t key) {
                 self.keyboard.release_key(key);
             })
-            .def("get_pixel", [](SuperChip8::SuperChip8& self, int x, int y) {
+            .def("get_pixel", [](SuperChip8::SuperChip8& self, int x, int y)
+            {
                 return self.display.getPixel(x, y);
+            })
+            .def("get_register_V", [](SuperChip8::SuperChip8& self, int x) {
+            return self.registers.get_V(x);
             });
 }

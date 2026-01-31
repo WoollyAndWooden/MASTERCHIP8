@@ -1,0 +1,4 @@
+pygame
+gymnasium
+tensorflow
+numpy
