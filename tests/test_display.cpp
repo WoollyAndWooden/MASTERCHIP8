@@ -14,14 +14,14 @@ TEST_F(DisplayTest, PixelToggling) {
     // Initial state should be false
     EXPECT_FALSE(display.getPixel(x, y));
 
-    // First toggle: false -> true
-    bool state1 = display.flipPixel(x, y);
-    EXPECT_TRUE(state1);
+    // First toggle: false -> true (No collision)
+    bool collision1 = display.flipPixel(x, y);
+    EXPECT_FALSE(collision1);
     EXPECT_TRUE(display.getPixel(x, y));
 
-    // Second toggle: true -> false
-    bool state2 = display.flipPixel(x, y);
-    EXPECT_FALSE(state2);
+    // Second toggle: true -> false (Collision!)
+    bool collision2 = display.flipPixel(x, y);
+    EXPECT_TRUE(collision2);
     EXPECT_FALSE(display.getPixel(x, y));
 }
 
@@ -53,8 +53,9 @@ TEST_F(DisplayTest, PixelIndependence) {
     display.set_pixel(20, 20, true);
     EXPECT_TRUE(display.getPixel(20, 20));
 
-    // Flip (10, 10) back to false
-    display.flipPixel(10, 10);
+    // Flip (10, 10) back to false (Collision)
+    bool collision = display.flipPixel(10, 10);
+    EXPECT_TRUE(collision);
     EXPECT_FALSE(display.getPixel(10, 10));
 
     // (20, 20) should still be true
