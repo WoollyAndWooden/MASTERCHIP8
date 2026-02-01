@@ -11,16 +11,24 @@ The Desktop Application provides a graphical interface for the emulator using th
 ## Flowcharts
 
 ### Main Loop
-*(Placeholder: Insert Flowchart of Qt Timer & Emulation Loop here)*
-1.  QTimer fires (60Hz).
-2.  Call `emulator->Tick()`.
-3.  Call `EmulatorDisplay->update()`.
-4.  Update Debug Table.
-5.  Check Sound Timer -> Play/Stop Beep.
 
-### Input Handling
-*(Placeholder: Insert Flowchart of Key Press Event here)*
-1.  User presses key.
-2.  Qt `keyPressEvent` captures it.
-3.  Map Qt Key to CHIP-8 Key (0-F).
-4.  Call `emulator->keyboard.press_key(mapped_key)`.
+```mermaid
+graph TD
+    Start((App Start)) --> Init[Initialize MainWindow]
+    Init --> LoadROM[/User Loads ROM/]
+    
+    LoadROM --> CreateEmu[Create Emulator Instance]
+    CreateEmu --> StartTimer[Start QTimer at 16ms]
+    
+    StartTimer --> TimerFires{Timer Fires at 60Hz}
+    TimerFires --> Tick[Call emulator->Tick]
+    Tick --> UpdateDisplay[Call display->update]
+    UpdateDisplay --> UpdateDebug[Update Debug Table]
+    UpdateDebug --> CheckSound{Sound Timer > 0?}
+    
+    CheckSound -->|Yes| PlaySound[Play/Resume Beep]
+    CheckSound -->|No| StopSound[Stop/Suspend Beep]
+    
+    PlaySound --> TimerFires
+    StopSound --> TimerFires
+```

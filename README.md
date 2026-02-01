@@ -6,9 +6,6 @@ A high-performance, cross-platform CHIP-8 emulator with a C++ core, Qt GUI, and 
 
 *   [Emulator Core Documentation](src/EmulatorSrc/EmulatorCore_Documentation.md) - The C++ emulation logic and architecture.
 *   [Qt GUI Documentation](src/QtWindows/QtGUI_Documentation.md) - The desktop application structure.
-*   [Python Module Documentation](python/PythonModule_Documentation.md) - Python bindings and AI integration.
-    *   [Pong Training](python/training/pong/PongTraining_Documentation.md)
-    *   [Tic-Tac-Toe Training](python/training/tictactoe/TicTacToeTraining_Documentation.md)
 
 ## Build Status
 
