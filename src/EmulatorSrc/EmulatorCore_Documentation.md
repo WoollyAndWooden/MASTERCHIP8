@@ -88,15 +88,56 @@ graph TD
     SetVF --> SetVX
     
     Set_8 -->|0x8XY5| IsOverflowSub{VX >= VY?}
-    IsOverflowSub -->|Yes| prepareVF[(1)]
-    IsOverflowSub -->|No| prepareVF[(0)]
+    IsOverflowSub -->|Yes| prepareVF1[(prepareVF = 1)]
+    IsOverflowSub -->|No| prepareVF0[(prepareVF = 0)]
+    prepareVF0 --> SUBXY[VX -= VY % 255]
+    prepareVF1 --> SUBXY
+    SUBXY --> SetVFtoPrepare((VF = prepareVF))
     
+    Set_8 -->|0x8XY6| ShiftRight[VF = VX & 1]
+    ShiftRight --> ShiftRightOp((VX = VX >> 1))
     
+    Set_8 -->|0x8XY7| IsOverflowSubN{VY >= VX?}
+    IsOverflowSubN -->|Yes| prepareVF1N[(prepareVF = 1)]
+    IsOverflowSubN -->|No| prepareVF0N[(prepareVF = 0)]
+    prepareVF0N --> SUBNXY[VX = VY - VX]
+    prepareVF1N --> SUBNXY
+    SUBNXY --> SetVFtoPrepareN((VF = prepareVF))
     
+    Set_8 -->|0x8XYE| ShiftLeft[VF = VX >> 7]
+    ShiftLeft --> ShiftLeftOp((VX = VX << 1))
     
-
+    Get_first -->|0x9| VXneVY{VX != VY}
+    VXneVY -->|Yes| Increase_PC
+    VXneVY -->|No| End
     
+    Get_first -->|0xA| SET_I((Set I = NNN))
     
+    Get_first -->|0xB| JUMP_OFFSET((PC = NNN + V0))
+    
+    Get_first -->|0xC| RND((VX = rand() & NN))
+    
+    Get_first -->|0xD| DRAW((Draw Sprite))
+    
+    Get_first -->|0xE| Set_E{Grab last Nibble}
+    Set_E -->|0xEX9E| SkipIfPressed{Key Vx Pressed?}
+    SkipIfPressed -->|Yes| Increase_PC
+    SkipIfPressed -->|No| End
+    
+    Set_E -->|0xEXA1| SkipIfNotPressed{Key Vx NOT Pressed?}
+    SkipIfNotPressed -->|Yes| Increase_PC
+    SkipIfNotPressed -->|No| End
+    
+    Get_first -->|0xF| Set_F{Grab last Nibble}
+    Set_F -->|0xFX07| GetDelay((VX = Delay Timer))
+    Set_F -->|0xFX0A| GetKey((Wait for Key, VX = Key))
+    Set_F -->|0xFX15| SetDelay((Delay Timer = VX))
+    Set_F -->|0xFX18| SetSound((Sound Timer = VX))
+    Set_F -->|0xFX1E| AddToI((I = I + VX))
+    Set_F -->|0xFX29| SetFont((I = Font Address for VX))
+    Set_F -->|0xFX33| BCD((Store BCD of VX at I))
+    Set_F -->|0xFX55| StoreRegs((Store V0-VX at I))
+    Set_F -->|0xFX65| LoadRegs((Load V0-VX from I))
     
 ```
 
