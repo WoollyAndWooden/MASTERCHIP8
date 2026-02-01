@@ -14,7 +14,7 @@ A high-performance, cross-platform CHIP-8 emulator with a C++ core, Qt GUI, and 
 
 ## Features
 
-*   **Core**: Fast, decoupled C++ emulation core.
+*   **Core**: C++
 *   **Display**: 64x32 resolution with configurable colors and grid.
 *   **Input**: Full keyboard mapping.
 *   **Sound**: Simple buzzer.
