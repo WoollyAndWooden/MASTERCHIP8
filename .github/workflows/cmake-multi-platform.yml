@@ -50,7 +50,7 @@ jobs:
 
     - name: Install ImageMagick (Windows)
       if: runner.os == 'Windows'
-      uses: ericLemanissier/setup-imagemagick@v1
+      run: choco install imagemagick.app
 
     - name: Install Conan
       run: pip install conan

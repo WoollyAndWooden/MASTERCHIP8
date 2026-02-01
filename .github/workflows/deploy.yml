@@ -147,8 +147,8 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install ImageMagick
-        uses: ericLemanissier/setup-imagemagick@v1
+      - name: Install ImageMagick (Windows)
+        run: choco install imagemagick.app
 
       - name: Install Conan
         run: pip install conan
